@@ -1,2 +1,5 @@
 # User's Makefile
 Makefile
+
+# Manifest files
+Manifest.toml
