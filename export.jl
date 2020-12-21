@@ -6,10 +6,15 @@
 
 using HTTP
 using JSON3
-using ProgressMeter
 
 # Headers
 const headers = ["Content-Type" => "application/x-www-form-urlencoded"]
+
+# ANSI escape sequences
+const green = "\e[1;32m"
+const yellow = "\e[1;33m"
+const blue = "\e[1;34m"
+const reset = "\e[0m"
 
 # Endpoints
 const base = "https://slack.com/api"
@@ -26,7 +31,7 @@ Note that a token that starts with `xoxs-` is expected.\n"
 
 request_failed(endpoint) = "\n
 The request to the \"$(endpoint)\" endpoint got rejected.\n
-Maybe an invalid token? Or a rate limit exceeded?\n"
+Maybe an invalid token?\n"
 
 # Pack the arguments in a dictionary using their names as keys
 macro query(args::Symbol...)
@@ -36,14 +41,27 @@ macro query(args::Symbol...)
 end
 
 # Create a request to the endpoint and return the body
-function request(endpoint, query)
+function request(endpoint, query, pad_length=0)
     try
         request = HTTP.get(endpoint, headers; query)
         body = JSON3.read(String(request.body))
-        (request.status ≠ 200 || body[:ok] == false) && error("`ok` check failed.")
+        if (request.status ≠ 200 || body[:ok] == false)
+            error("\nThe `ok` check has failed.\n")
+        end
         return body
-    catch
-        error(request_failed(endpoint))
+    catch e
+        # Wait if the rate limit is exceeded
+        if e isa HTTP.ExceptionRequest.StatusError
+            println(
+                ' '^(pad_length + 5),
+                "$(yellow) ➥ The rate limit is exceeded. Waiting...$(reset)",
+            )
+            sleep(60)
+            return request(endpoint, query, pad_length)
+        # Or report an error
+        else
+            error(request_failed(endpoint))
+        end
     end
 end
 
@@ -82,7 +100,7 @@ function write_thread(replies, threads_path; comma=false)
 end
 
 # Write the messages and threads
-function write(channel, history, messages_path; comma=false)
+function write(channel, history, messages_path, pad_length; comma=false)
 
     # Get the messages
     messages = history[:messages]
@@ -96,11 +114,30 @@ function write(channel, history, messages_path; comma=false)
         end
     end
 
+    # Get the threads timestamps
+    threads = filter(!isempty, get.(messages, :thread_ts, ""))
+
+    # Get the number of threads
+    threads_num = length(threads)
+
     # Write the threads
-    for ts in filter(!isempty, get.(messages, :thread_ts, ""))
+    for (index, ts) in pairs(threads)
+
+        # Get a counter string
+        counter = lpad("($(index)/$(threads_num))", pad_length)
+
+        # Print the info
+        println(
+            ' '^5,
+            "$(green)$(counter) ➥ Exporting the ",
+            "$(blue)$(ts)$(green) thread...$(reset)",
+        )
+
+        # Create a directory for the channel in the threads folder
+        threads_channel_dir = mkpath(joinpath(threads_dir, channel))
 
         # Set the path to the output file for the thread
-        threads_path = joinpath(threads_dir, "$(ts).json")
+        threads_path = joinpath(threads_channel_dir, "$(ts).json")
 
         # Write the first bracket
         open(threads_path, "w") do io
@@ -108,13 +145,21 @@ function write(channel, history, messages_path; comma=false)
         end
 
         # Write the first portion of the thread
-        replies = request(conversations_replies, @query(channel, token, ts))
+        replies = request(conversations_replies, @query(channel, token, ts), pad_length)
         write_thread(replies, threads_path)
 
         # Write the next portions of the thread
         while get(replies, :has_more, false)
+            println(
+                ' '^(pad_length + 5),
+                "$(green) ➥ Taking the next portion of the thread...$(reset)",
+            )
             cursor = replies[:response_metadata][:next_cursor]
-            replies = request(conversations_replies, @query(channel, cursor, token, ts))
+            replies = request(
+                conversations_replies,
+                @query(channel, cursor, token, ts),
+                pad_length,
+            )
             write_thread(replies, threads_path, comma=true)
         end
 
@@ -127,8 +172,31 @@ function write(channel, history, messages_path; comma=false)
 
 end
 
+println(
+    '\n',
+    ' '^5,
+    "$(green)Started exporting the history of Julia's Slack ",
+    "(https://julialang.slack.com).$(reset)\n"
+)
+
+# Get the number of channels
+channels_num = length(channels)
+
 # Get and save the history of every channel
-@showprogress 1 "Exporting..." for channel in getindex.(channels, :id)
+for (index, channel) in pairs(channels)
+
+    # Print the info
+    println(
+        ' '^5,
+        "$(green)($(index)/$(channels_num)) Exporting the ",
+        "$(blue)$(channel[:id])$(green) ($(channel[:name])) channel...$(reset)",
+    )
+
+    # Get the ID of the channel
+    channel = channel[:id]
+
+    # Calculate the pad length for the counters
+    pad_length = length("($(index)/$(channels_num))")
 
     # Set the path to the output file for the channel
     messages_path = joinpath(messages_dir, "$(channel).json")
@@ -149,14 +217,18 @@ end
     end
 
     # Write the first portion of the messages history
-    history = request(conversations_history, @query(channel, token))
-    write(channel, history, messages_path)
+    history = request(conversations_history, @query(channel, token), pad_length)
+    write(channel, history, messages_path, pad_length)
 
     # Write the next portions of the messages history
     while get(history, :has_more, false)
+        println(
+            ' '^(pad_length + 5),
+            "$(green) ➥ Taking the next portion of messages...$(reset)"
+        )
         cursor = history[:response_metadata][:next_cursor]
-        history = request(conversations_history, @query(channel, cursor, token))
-        write(channel, history, messages_path, comma=true)
+        history = request(conversations_history, @query(channel, cursor, token), pad_length)
+        write(channel, history, messages_path, pad_length, comma=true)
     end
 
     # Write the last bracket
@@ -164,4 +236,9 @@ end
         print(io, ']')
     end
 
+    # Skip a line
+    println()
+
 end
+
+println(' '^5, "$(green)Done.$(reset)\n")
