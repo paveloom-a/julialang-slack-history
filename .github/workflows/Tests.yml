@@ -1,4 +1,4 @@
-name: Parsing Test
+name: Parsing Tests
 
 on:
   pull_request:
