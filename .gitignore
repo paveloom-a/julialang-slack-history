@@ -1,2 +1,10 @@
 # User's Makefile
 Makefile
+
+# Manifest files
+Manifest.toml
+
+# Local tests
+messages
+threads
+channels.json
