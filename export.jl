@@ -70,7 +70,7 @@ token = get(ENV, "TOKEN") do
     error(no_token_error)
 end
 
-# Set a limit for pagination
+# Set a limit for pagination (channels)
 limit = 1000
 
 # Get a list of channels
@@ -84,6 +84,9 @@ open(joinpath(@__DIR__, "channels.json"), "w") do io
     JSON3.write(io, Dict(getindex.(channels, :id) .=> getindex.(channels, :name)))
 end
 
+# Set a limit for pagination (messages and threads)
+limit = 200
+
 # Create directories for messages and threads (if they don't exist)
 const messages_dir = mkpath(joinpath(@__DIR__, "messages"))
 const threads_dir = mkpath(joinpath(@__DIR__, "threads"))
@@ -92,33 +95,58 @@ const threads_dir = mkpath(joinpath(@__DIR__, "threads"))
 function write_thread(replies, threads_path; comma=false)
     open(threads_path, "a") do io
         if comma
-            print(io, "," * chop(JSON3.write(replies), head=1))
+            print(io, "," * chop(JSON3.write(replies[:messages]), head=1))
         else
-            print(io, chop(JSON3.write(replies), head=1))
+            print(io, chop(JSON3.write(replies[:messages]), head=1))
         end
     end
 end
 
 # Write the messages and threads
-function write(channel, history, messages_path, pad_length; comma=false)
+function write(
+    channel,
+    history,
+    messages_path,
+    pad_length,
+    old_messages,
+    temp_io;
+    comma=false,
+)
 
     # Get the messages
     messages = history[:messages]
-
-    # Write the messages
-    open(messages_path, "a") do io
-        if comma
-            print(io, "," * chop(JSON3.write(messages), head=1))
-        else
-            print(io, chop(JSON3.write(messages), head=1))
-        end
-    end
 
     # Get the threads timestamps
     threads = filter(!isempty, get.(messages, :thread_ts, ""))
 
     # Get the number of threads
     threads_num = length(threads)
+
+    # If no old messages, write the current history
+    if isempty(old_messages)
+        open(messages_path, "a") do io
+            if comma
+                print(io, ',', chop(JSON3.write(messages), head=1))
+            else
+                print(io, chop(JSON3.write(messages), head=1))
+            end
+        end
+    # Otherwise, determine what needs to be appended
+    else
+        current_timestamps = [message[:ts] for message in messages]
+        old_timestamps = [message[:ts] for message in old_messages]
+
+        inds = findall(timestamp -> !(timestamp in old_timestamps), current_timestamps)
+        messages = messages[inds]
+
+        if !isempty(messages)
+            if comma
+                print(temp_io, ',', chop(JSON3.write(messages), head=1))
+            else
+                print(temp_io, chop(JSON3.write(messages), head=1))
+            end
+        end
+    end
 
     # Write the threads
     for (index, ts) in pairs(threads)
@@ -145,7 +173,11 @@ function write(channel, history, messages_path, pad_length; comma=false)
         end
 
         # Write the first portion of the thread
-        replies = request(conversations_replies, @query(channel, token, ts), pad_length)
+        replies = request(
+            conversations_replies,
+            @query(channel, limit, token, ts),
+            pad_length
+        )
         write_thread(replies, threads_path)
 
         # Write the next portions of the thread
@@ -157,7 +189,7 @@ function write(channel, history, messages_path, pad_length; comma=false)
             cursor = replies[:response_metadata][:next_cursor]
             replies = request(
                 conversations_replies,
-                @query(channel, cursor, token, ts),
+                @query(channel, cursor, limit, token, ts),
                 pad_length,
             )
             write_thread(replies, threads_path, comma=true)
@@ -201,24 +233,32 @@ for (index, channel) in pairs(channels)
     # Set the path to the output file for the channel
     messages_path = joinpath(messages_dir, "$(channel).json")
 
-    # Write the first bracket
-    if !isfile(messages_path) || (isfile(messages_path) && filesize(messages_path) == 0)
+    # Prepare an empty object to store the old messages
+    old_messages = JSON3.Object()
+
+    # Prepare an empty buffer to store new messages
+    temp_io = IOBuffer()
+
+    # If the history of the channel
+    # was written before, load it and
+    # rewrite, removing the first bracket
+    if isfile(messages_path)
+        old_messages = open(messages_path, "r") do io
+            JSON3.read(io)
+        end
+        open(messages_path, "w") do io
+            print(io, ',', chop(JSON3.write(old_messages), head=1, tail=0))
+        end
+    # Otherwise, write the first bracket
+    else
         open(messages_path, "w") do io
             print(io, '[')
-        end
-    # Or remove the last one
-    else
-        content = open(messages_path, "r") do io
-            read(io, String)
-        end
-        open(messages_path, "w") do io
-            print(io, chop(content) * ",")
         end
     end
 
     # Write the first portion of the messages history
-    history = request(conversations_history, @query(channel, token), pad_length)
-    write(channel, history, messages_path, pad_length)
+    history = request(conversations_history, @query(channel, limit, token), pad_length)
+    write(channel, history, messages_path, pad_length, old_messages, temp_io)
 
     # Write the next portions of the messages history
     while get(history, :has_more, false)
@@ -227,16 +267,44 @@ for (index, channel) in pairs(channels)
             "$(green) ➥ Taking the next portion of messages...$(reset)"
         )
         cursor = history[:response_metadata][:next_cursor]
-        history = request(conversations_history, @query(channel, cursor, token), pad_length)
-        write(channel, history, messages_path, pad_length, comma=true)
+        history = request(
+            conversations_history,
+            @query(channel, cursor, limit, token),
+            pad_length
+        )
+        write(
+            channel,
+            history,
+            messages_path,
+            pad_length,
+            old_messages,
+            temp_io,
+            comma=true
+        )
     end
 
-    # Write the last bracket
-    open(messages_path, "a") do io
-        print(io, ']')
+    # If no old messages, write the last bracket
+    if isempty(old_messages)
+        open(messages_path, "a") do io
+            print(io, ']')
+        end
+    # Otherwise, write the new messages (if there are any)
+    else
+        new_content = String(take!(temp_io))
+        old_content = open(messages_path, "r") do io
+            read(io, String)
+        end
+        if isempty(new_content)
+            open(messages_path, "w") do io
+                print(io, '[', chop(old_content, head=1, tail=0))
+            end
+        else
+            open(messages_path, "w") do io
+                print(io, '[', new_content, old_content)
+            end
+        end
     end
 
-    # Skip a line
     println()
 
 end
