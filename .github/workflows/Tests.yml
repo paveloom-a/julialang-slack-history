@@ -1,0 +1,30 @@
+name: Parsing Test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  TOKEN: ${{ secrets.SLACK_TOKEN }}
+
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@latest
+        with:
+          version: '1.5.3'
+      - name: Instantiate the project
+        run: julia --project=. -e 'using Pkg; pkg"instantiate"'
+      - name: Test first run
+        run: |
+          julia --project=. export.jl
+          julia --project=. check.jl
+      - name: Test second run
+        run: |
+          julia --project=. export.jl
+          julia --project=. check.jl
