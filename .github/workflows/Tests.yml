@@ -20,11 +20,11 @@ jobs:
           version: '1.5.3'
       - name: Instantiate the project
         run: julia --project=. -e 'using Pkg; pkg"instantiate"'
-      - name: Test first run
+      - name: Test the first run
         run: |
           julia --project=. export.jl
           julia --project=. check.jl
-      - name: Test second run
+      - name: Test the second run
         run: |
           julia --project=. export.jl
           julia --project=. check.jl
