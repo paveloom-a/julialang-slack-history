@@ -1,10 +1,7 @@
 # User's Makefile
 Makefile
 
-# Manifest files
-Manifest.toml
-
-# Local tests
-messages
-threads
-channels.json
+# Project file and scripts
+Project.toml
+export.jl
+check.jl
