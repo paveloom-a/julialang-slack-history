@@ -1,18 +1,15 @@
-name: Export
+name: Export the history
 
 on:
-  pull_request:
-    branches:
-      - main
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '0 */1 * * *'
   workflow_dispatch:
 
 env:
   TOKEN: ${{ secrets.SLACK_TOKEN }}
 
 jobs:
-  Test:
+  Export:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
