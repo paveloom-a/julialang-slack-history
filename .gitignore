@@ -3,5 +3,6 @@ Makefile
 
 # Project file and scripts
 Project.toml
+Manifest.toml
 export.jl
 check.jl
