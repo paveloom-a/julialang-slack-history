@@ -40,7 +40,6 @@ jobs:
           git-commit-gpgsign: true
       - name: Create and push a commit
         run: |
-          touch file
           git add -A
           git commit -m "Update the history [auto]."
           git push
