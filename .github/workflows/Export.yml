@@ -1,4 +1,4 @@
-name: Export the history
+name: Export the History
 
 on:
   schedule:

@@ -9,9 +9,20 @@ env:
   TOKEN: ${{ secrets.SLACK_TOKEN }}
 
 jobs:
+  CheckCommit:
+    runs-on: ubuntu-latest
+    outputs:
+      subject: ${{ steps.get.outputs.subject }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get the subject of the last commit
+        id: get
+        run: echo "::set-output name=subject::$(git log --format=%s -n 1)"
   Test:
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.head_commit.message, '[no tests]') }}
+    needs: CheckCommit
+    if: ${{ !contains(needs.CheckCommit.outputs.subject, '[no tests]') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
