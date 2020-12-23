@@ -20,7 +20,7 @@ jobs:
       - name: Get the subject of the last commit
         id: get
         run: |
-          SUBJECT=$(git log --format=%s -n 1)
+          SUBJECT=$(git log --format=%s -n 1 HEAD^2)
           echo ${SUBJECT}
           echo "::set-output name=subject::${SUBJECT}"
   Test:
