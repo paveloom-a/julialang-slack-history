@@ -1,9 +1,16 @@
 name: Export the History
 
 on:
+  pull_request:
+    branches:
+      - main
   schedule:
     - cron: '0 */1 * * *'
   workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: src/history
 
 env:
   TOKEN: ${{ secrets.SLACK_TOKEN }}
