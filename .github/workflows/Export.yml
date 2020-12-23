@@ -5,6 +5,10 @@ on:
     - cron: '0 */1 * * *'
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: src/history
+
 env:
   TOKEN: ${{ secrets.SLACK_TOKEN }}
 
@@ -20,7 +24,7 @@ jobs:
         uses: julia-actions/setup-julia@latest
         with:
           version: '1.5.3'
-      - name: Get the scripts
+      - name: Get the project files
         run: |
           wget https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/main/export.jl
           wget https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/main/check.jl
