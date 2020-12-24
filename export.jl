@@ -79,9 +79,23 @@ channels = request(conversations_list, @query(limit, token))[:channels]
 # Filter out archived channels
 channels = filter(ch -> !ch[:is_archived], channels)
 
-# Write the channels summary
+# Sort the channels by names
+channels = sort(channels, by=ch -> ch[:name])
+
+# Get the IDs
+ids = getindex.(channels, :id)
+
+# Get the names
+names = getindex.(channels, :name)
+
+# Write the channels IDs (array)
 open(joinpath(@__DIR__, "channels.json"), "w") do io
-    JSON3.write(io, Dict(getindex.(channels, :id) .=> getindex.(channels, :name)))
+    JSON3.write(io, ids)
+end
+
+# Write the channels names (dictionary)
+open(joinpath(@__DIR__, "names.json"), "w") do io
+    JSON3.write(io, Dict(ids .=> names))
 end
 
 # Set a limit for pagination (messages and threads)
@@ -212,20 +226,20 @@ println(
 )
 
 # Get the number of channels
-channels_num = length(channels)
+channels_num = length(ids)
 
 # Get and save the history of every channel
-for (index, channel) in pairs(channels)
+for index in eachindex(ids)
 
     # Print the info
     println(
         ' '^5,
         "$(green)($(index)/$(channels_num)) Exporting the ",
-        "$(blue)$(channel[:id])$(green) ($(channel[:name])) channel...$(reset)",
+        "$(blue)$(ids[index])$(green) ($(names[index])) channel...$(reset)",
     )
 
     # Get the ID of the channel
-    channel = channel[:id]
+    channel = ids[index]
 
     # Calculate the pad length for the counters
     pad_length = length("($(index)/$(channels_num))")
