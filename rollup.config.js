@@ -4,6 +4,8 @@ import resolve from '@rollup/plugin-node-resolve';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import css from 'rollup-plugin-css-only';
+import json from '@rollup/plugin-json';
+import inlineSvg from "rollup-plugin-inline-svg";
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -29,48 +31,48 @@ function serve() {
 }
 
 export default {
-	input: 'src/main.js',
-	output: {
-		sourcemap: true,
-		format: 'iife',
-		name: 'app',
-		file: 'public/build/bundle.js'
-	},
-	plugins: [
-		svelte({
-			compilerOptions: {
-				// enable run-time checks when not in production
-				dev: !production
-			}
-		}),
-		// we'll extract any component CSS out into
-		// a separate file - better for performance
-		css({ output: 'bundle.css' }),
+  input: "src/main.js",
+  output: {
+    sourcemap: true,
+    format: "iife",
+    name: "app",
+    file: "public/build/bundle.js",
+  },
+  plugins: [
 
-		// If you have external dependencies installed from
-		// npm, you'll most likely need these plugins. In
-		// some cases you'll need additional configuration -
-		// consult the documentation for details:
-		// https://github.com/rollup/plugins/tree/master/packages/commonjs
-		resolve({
-			browser: true,
-			dedupe: ['svelte']
-		}),
-		commonjs(),
+    svelte({
+      compilerOptions: {
+        // enable run-time checks when not in production
+        dev: !production,
+      },
+    }),
 
-		// In dev mode, call `npm run start` once
-		// the bundle has been generated
-		!production && serve(),
+    // Take the CSS out
+    css({ output: "bundle.css" }),
 
-		// Watch the `public` directory and refresh the
-		// browser on changes when not in production
-		!production && livereload('public'),
+    resolve({
+      browser: true,
+      dedupe: ["svelte"],
+    }),
 
-		// If we're building for production (npm run build
-		// instead of npm run dev), minify
-		production && terser()
-	],
-	watch: {
-		clearScreen: false
-	}
+    commonjs(),
+
+    // Development mode
+    !production && serve(),
+    !production && livereload("public"),
+
+    // Production mode
+    production && terser(),
+
+    // Convert JSON files to ES6 modules
+    json({
+      compact: true,
+    }),
+
+    // Transform SVG files into strings on import
+    inlineSvg(),
+  ],
+  watch: {
+    clearScreen: false,
+  },
 };
