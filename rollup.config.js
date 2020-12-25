@@ -4,8 +4,6 @@ import resolve from '@rollup/plugin-node-resolve';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import css from 'rollup-plugin-css-only';
-import json from '@rollup/plugin-json';
-import inlineSvg from "rollup-plugin-inline-svg";
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -63,14 +61,6 @@ export default {
 
     // Production mode
     production && terser(),
-
-    // Convert JSON files to ES6 modules
-    json({
-      compact: true,
-    }),
-
-    // Transform SVG files into strings on import
-    inlineSvg(),
   ],
   watch: {
     clearScreen: false,

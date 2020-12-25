@@ -56,17 +56,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-json@npm:~4.1.0":
-  version: 4.1.0
-  resolution: "@rollup/plugin-json@npm:4.1.0"
-  dependencies:
-    "@rollup/pluginutils": ^3.0.8
-  peerDependencies:
-    rollup: ^1.20.0 || ^2.0.0
-  checksum: 07bc6bc83d07aefd35278e4e1a125e65210061b3dcab50c0f01273c54f43a60a3e01c1a0fed451e35d592ef1cbc8288ec8148a6229cf8cca9cdbf11a6d2d7d1c
-  languageName: node
-  linkType: hard
-
 "@rollup/plugin-node-resolve@npm:~11.0.1":
   version: 11.0.1
   resolution: "@rollup/plugin-node-resolve@npm:11.0.1"
@@ -95,7 +84,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/pluginutils@npm:^3.0.8, @rollup/pluginutils@npm:^3.1.0":
+"@rollup/pluginutils@npm:^3.1.0":
   version: 3.1.0
   resolution: "@rollup/pluginutils@npm:3.1.0"
   dependencies:
@@ -904,11 +893,9 @@ fsevents@~2.1.2:
   resolution: "julialang-slack-history@workspace:."
   dependencies:
     "@rollup/plugin-commonjs": ~17.0.0
-    "@rollup/plugin-json": ~4.1.0
     "@rollup/plugin-node-resolve": ~11.0.1
     rollup: ~2.35.1
     rollup-plugin-css-only: ~3.1.0
-    rollup-plugin-inline-svg: ~2.0.0
     rollup-plugin-livereload: ~2.0.0
     rollup-plugin-svelte: ~7.0.0
     rollup-plugin-terser: ~7.0.2
@@ -1296,15 +1283,6 @@ fsevents@~2.1.2:
   peerDependencies:
     rollup: 1 || 2
   checksum: 8a7d81d583bb3d2e0ccc29ddec4af94328e72f79421474613aafdf1363de7bb8ea0d5498b21f01b8db69c881db903310142397e60dd919e57a7bd6f2a889e20d
-  languageName: node
-  linkType: hard
-
-"rollup-plugin-inline-svg@npm:~2.0.0":
-  version: 2.0.0
-  resolution: "rollup-plugin-inline-svg@npm:2.0.0"
-  peerDependencies:
-    rollup: "*"
-  checksum: 3f8e4ac0c88b19497050c7da4905d3294862be9fd2b6c2284faa3149395aa4ab27eda14107a767493797da976cf3f6fa493e9b120601fa818950479f7ad422b8
   languageName: node
   linkType: hard
 
