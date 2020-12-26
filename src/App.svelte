@@ -17,6 +17,10 @@
   let channels = getChannels();
   let names = getNames();
 
+  function handleClick() {
+		alert('Hello there!')
+	}
+
   // Components
   import CollapseArrow from "./assets/CollapseArrow.svelte";
   import Hashtag from "./assets/Hashtag.svelte";
@@ -63,6 +67,7 @@
     position: absolute;
     top: 0;
     width: 100%;
+    z-index: 1;
   }
 
   #grid > #sidebar > #header {
@@ -71,10 +76,6 @@
     display: flex;
     grid-row: start;
     padding: 0 19px 0 16px;
-  }
-
-  #grid > #sidebar > #channels::-webkit-scrollbar {
-    display: none;
   }
 
   #grid > #sidebar > #channels {
@@ -88,19 +89,41 @@
     scrollbar-width: none;
   }
 
+  #grid > #sidebar > #channels::-webkit-scrollbar {
+    display: none;
+  }
+
   #grid > #sidebar > #channels > #header {
     margin: 16px 0px;
   }
 
   #grid > #sidebar > #channels > .channel {
-    display: flex;
     align-items: center;
+    cursor: pointer;
+    display: flex;
     margin-left: 10px;
     min-width: 0;
+    padding: 3px 0;
+    position: relative;
+    z-index: 0;
+  }
+
+  #grid > #sidebar > #channels > .channel:hover .channel-background {
+    display: block;
+  }
+
+  #grid > #sidebar > #channels > .channel > .channel-background {
+    display: none;
+    background-color: rgb(53, 13, 54);
+    height: 100%;
+    left: -26px;
+    position: absolute;
+    width: calc(16px + 10px + 100% + 19px);
+    z-index: -1;
   }
 
   #grid > #sidebar > #channels > .channel > span.text {
-    margin-bottom: 5px;
+    height: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -119,9 +142,10 @@
           <div class="channel"><span class="text">Loading...</span></div>
         {:then}
           {#each channels as channel}
-            <div class="channel">
-              <span class="icon"><Hashtag /></span>
-              <span class="text">{names[channel]}</span>
+            <div class="channel" on:click={handleClick}>
+                <div class="channel-background"></div>
+                <span class="icon"><Hashtag /></span>
+                <span class="text">{names[channel]}</span>
             </div>
           {/each}
         {:catch}
