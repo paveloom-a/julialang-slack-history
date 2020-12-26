@@ -1,9 +1,9 @@
-import svelte from 'rollup-plugin-svelte';
-import commonjs from '@rollup/plugin-commonjs';
-import resolve from '@rollup/plugin-node-resolve';
-import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
+import commonjs from '@rollup/plugin-commonjs';
 import css from 'rollup-plugin-css-only';
+import livereload from 'rollup-plugin-livereload';
+import resolve from '@rollup/plugin-node-resolve';
+import svelte from 'rollup-plugin-svelte';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -29,38 +29,32 @@ function serve() {
 }
 
 export default {
-  input: "src/main.js",
+  input: 'src/main.js',
   output: {
-    sourcemap: true,
-    format: "iife",
-    name: "app",
-    file: "public/build/bundle.js",
+    format: 'esm',
+    file: 'public/build/bundle.js',
   },
   plugins: [
-
-    svelte({
-      compilerOptions: {
-        // enable run-time checks when not in production
-        dev: !production,
-      },
-    }),
-
     // Take the CSS out
-    css({ output: "bundle.css" }),
-
-    resolve({
-      browser: true,
-      dedupe: ["svelte"],
-    }),
+    css({ output: 'bundle.css' }),
 
     commonjs(),
 
     // Development mode
     !production && serve(),
-    !production && livereload("public"),
+    !production && livereload('public'),
 
     // Production mode
     production && terser(),
+
+    // Locate and bundle third party modules
+    resolve(),
+
+    svelte({
+      compilerOptions: {
+        dev: !production,
+      },
+    }),
   ],
   watch: {
     clearScreen: false,
