@@ -120,7 +120,6 @@ end
 function write(
     channel,
     history,
-    messages_path,
     pad_length,
     old_messages,
     tmp_io;
@@ -148,7 +147,7 @@ function write(
     # Otherwise, determine what needs to be appended
     else
         current_timestamps = [message[:ts] for message in messages]
-        old_timestamps = [message[:ts] for message in old_messages]
+        old_timestamps = [message[:ts] for message in old_messages[:messages]]
 
         inds = findall(timestamp -> !(timestamp in old_timestamps), current_timestamps)
         messages = messages[inds]
@@ -245,7 +244,8 @@ for index in eachindex(ids)
     pad_length = length("($(index)/$(channels_num))")
 
     # Set the path to the output file for the channel
-    messages_path = joinpath(messages_dir, "$(channel).json")
+    messages_channel_dir = joinpath(messages_dir, channel)
+    messages_path = joinpath(messages_channel_dir, "$(channel).json")
 
     # Prepare an empty object to store the old messages
     old_messages = JSON3.Object()
@@ -264,7 +264,7 @@ for index in eachindex(ids)
 
     # Write the first portion of the messages history
     history = request(conversations_history, @query(channel, limit, token), pad_length)
-    write(channel, history, messages_path, pad_length, old_messages, tmp_io)
+    write(channel, history, pad_length, old_messages, tmp_io)
 
     # Write the next portions of the messages history
     while get(history, :has_more, false)
@@ -281,7 +281,6 @@ for index in eachindex(ids)
         write(
             channel,
             history,
-            messages_path,
             pad_length,
             old_messages,
             tmp_io,
@@ -293,8 +292,9 @@ for index in eachindex(ids)
     if isempty(old_messages)
         new_content = String(take!(tmp_io))
         if !isempty(new_content)
+            mkpath(messages_channel_dir)
             open(messages_path, "w") do io
-                print(io, '[', new_content, ']')
+                print(io, "{\"cursor\": 0, \"messages\": [", new_content, "]}")
             end
         end
     # Otherwise, append the new messages (if there are any)
@@ -304,10 +304,11 @@ for index in eachindex(ids)
             open(messages_path, "w") do io
                 print(
                     io,
-                    '[',
+                    "{\"cursor\": $(old_messages[:cursor]), \"messages\": [",
                     new_content,
                     ',',
-                    chop(JSON3.write(old_messages), head=1, tail=0)
+                    chop(JSON3.write(old_messages[:messages]), head=1, tail=0),
+                    '}'
                 )
             end
         end

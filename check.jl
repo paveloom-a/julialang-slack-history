@@ -8,30 +8,25 @@ using Test
 const messages_dir = joinpath(@__DIR__, "messages")
 const threads_dir = joinpath(@__DIR__, "threads")
 
-@testset "Messages" begin
-    for file in readdir(messages_dir, join=true)
-        open(file, "r") do io
-            try
-                @test_nowarn JSON3.read(io)
-            catch
-                println("\n\e[1;31mWhoops! File: $(basename(file))\e[0m\n")
-                rethrow()
-            end
-        end
-    end
-end
-
-@testset "Threads" begin
-    for dir in readdir(threads_dir, join=true)
+function test(target)
+    for dir in readdir(target, join=true)
         for file in readdir(dir, join=true)
             open(file, "r") do io
                 try
                     @test_nowarn JSON3.read(io)
                 catch
-                    println("\n\e[1;31mWhoops! File: $(dir)/$(basename(file))\e[0m\n")
+                    println("\n\e[1;31mWhoops! File: $(basename(file))\e[0m\n")
                     rethrow()
                 end
             end
         end
     end
+end
+
+@testset "Messages" begin
+    test(messages_dir)
+end
+
+@testset "Threads" begin
+    test(threads_dir)
 end
