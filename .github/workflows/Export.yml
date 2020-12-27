@@ -5,10 +5,6 @@ on:
     - cron: '0 */1 * * *'
   workflow_dispatch:
 
-defaults:
-  run:
-    working-directory: src/history
-
 env:
   TOKEN: ${{ secrets.SLACK_TOKEN }}
 
@@ -19,7 +15,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: gh-pages
+          ref: history
       - name: Setup Julia
         uses: julia-actions/setup-julia@latest
         with:
@@ -27,6 +23,7 @@ jobs:
       - name: Get the project files
         run: |
           wget https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/main/export.jl
+          wget https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/main/split.jl
           wget https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/main/check.jl
           wget https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/main/Project.toml
       - name: Instantiate the project
@@ -34,6 +31,7 @@ jobs:
       - name: Export the history
         run: |
           julia --project=. export.jl
+          julia --project=. split.jl
           julia --project=. check.jl
       - name: Import the GPG key
         uses: crazy-max/ghaction-import-gpg@v3
