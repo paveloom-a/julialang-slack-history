@@ -1,1 +1,1 @@
-[{"type":"message","subtype":"channel_join","ts":"1608617956.000300","user":"U01HEN3VDM1","text":"<@U01HEN3VDM1> has joined the channel"}]
+{"cursor": 0, "messages": [{"type":"message","subtype":"channel_join","ts":"1608617956.000300","user":"U01HEN3VDM1","text":"<@U01HEN3VDM1> has joined the channel"}]}
