@@ -2,24 +2,39 @@
   // Data
 	async function getChannels() {
     const res = await fetch(
-      `https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/gh-pages/src/history/channels.json`
+      `https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/history/channels.json`
     );
     channels = await res.json();
 	}
 
 	async function getNames() {
     const res = await fetch(
-      `https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/gh-pages/src/history/names.json`
+      `https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/history/names.json`
     );
     names = await res.json();
+	}
+
+	async function getHistory(channel) {
+    const res = await fetch(
+      `https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/history/messages/${channel}/${channel}.json`
+    );
+    history = await res.json();
 	}
 
   let channels = getChannels();
   let names = getNames();
 
-  function handleClick() {
-		alert('Hello there!')
+  let showHistory = false;
+  let history = [];
+
+  function channelClick(channel) {
+    showHistory = true;
+		history = getHistory(channel);
 	}
+
+  function test(el) {
+    el.scrollTop = el.scrollHeight;
+  }
 
   // Components
   import CollapseArrow from "./assets/CollapseArrow.svelte";
@@ -31,9 +46,33 @@
 
   #grid {
     display: grid;
-    grid-template-columns: [start] 17% [sidebar] auto [end];
+    grid-template-columns: [start] max(17%, 220px) [sidebar] auto [end];
     height: 100%;
     width: 100%;
+  }
+
+  #grid > #history {
+    display: grid;
+    grid-column: sidebar;
+    grid-template-rows: [start] 64px [channel-header] auto [end];
+    overflow: hidden;
+  }
+
+  #grid > #history > #feed {
+    -ms-overflow-style: none;
+    display: flex;
+    flex-direction: column;
+    grid-row: channel-header;
+    overflow-y: scroll;
+    scrollbar-width: none;
+  }
+
+  #grid > #history > #feed::-webkit-scrollbar {
+    display: none;
+  }
+
+  #grid > #history > #info {
+    grid-row: channel-header;
   }
 
   #grid > #sidebar {
@@ -42,7 +81,6 @@
     display: grid;
     grid-column: start;
     grid-template-rows: [start] 64px [sidebar-header] auto [end];
-    min-width: 220px;
     overflow: hidden;
     position: relative;
   }
@@ -142,7 +180,7 @@
           <div class="channel"><span class="text">Loading...</span></div>
         {:then}
           {#each channels as channel}
-            <div class="channel" on:click={handleClick}>
+            <div class="channel" on:click={channelClick(channel)}>
                 <div class="channel-background"></div>
                 <span class="icon"><Hashtag /></span>
                 <span class="text">{names[channel]}</span>
@@ -158,6 +196,29 @@
           </div>
         {/await}
       </div>
+    </div>
+    <div id="history">
+      {#if showHistory}
+          {#await history}
+            <div id="info"><span class="text">Loading...</span></div>
+          {:then}
+            <div id="feed" use:test>
+              {#each [...history.messages].reverse() as message}
+                <div class="message">
+                  <div class="text">{message.text}</div>
+                </div>
+              {/each}
+            </div>
+          {:catch}
+            <div id="info">
+              Nope.
+            </div>
+          {/await}
+      {:else}
+        <div id="info">
+          hello?
+        </div>
+      {/if}
     </div>
   </div>
 </body>
