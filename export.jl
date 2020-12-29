@@ -105,27 +105,14 @@ limit = 200
 const messages_dir = mkpath(joinpath(@__DIR__, "messages"))
 const threads_dir = mkpath(joinpath(@__DIR__, "threads"))
 
-# Write a thread
-function write_thread(replies, threads_path; comma=false)
-    open(threads_path, "a") do io
-        if comma
-            print(io, "," * chop(JSON3.write(replies[:messages]), head=1))
-        else
-            print(io, chop(JSON3.write(replies[:messages]), head=1))
-        end
-    end
-end
-
 # Write the messages and threads
 function write(
     channel,
     history,
     pad_length,
     old_messages,
-    tmp_io;
-    comma=false,
+    new_messages,
 )
-
     # Get the messages
     messages = history[:messages]
 
@@ -138,31 +125,33 @@ function write(
     # If no old messages, write the current history
     if isempty(old_messages)
         if !isempty(messages)
-            if comma
-                print(tmp_io, ',', chop(JSON3.write(messages), head=1))
-            else
-                print(tmp_io, chop(JSON3.write(messages), head=1))
-            end
+            new_messages[] = [new_messages[]; messages]
         end
     # Otherwise, determine what needs to be appended
     else
+        # Get the timestamps from both packs of messages
         current_timestamps = [message[:ts] for message in messages]
         old_timestamps = [message[:ts] for message in old_messages[:messages]]
 
+        # Determine the indices of unique timestamps
         inds = findall(timestamp -> !(timestamp in old_timestamps), current_timestamps)
+
+        # Get the unique messages
         messages = messages[inds]
 
         if !isempty(messages)
-            if comma
-                print(tmp_io, ',', chop(JSON3.write(messages), head=1))
-            else
-                print(tmp_io, chop(JSON3.write(messages), head=1))
-            end
+            new_messages[] = [new_messages[]; messages]
         end
     end
 
+    # Create a directory for the channel in the threads folder
+    threads_channel_dir = mkpath(joinpath(threads_dir, channel))
+
     # Write the threads
     for (index, ts) in pairs(threads)
+
+        # Prepare an empty array of JSON objects to store new threads
+        new_threads = JSON3.Object[]
 
         # Get a counter string
         counter = lpad("($(index)/$(threads_num))", pad_length)
@@ -174,26 +163,18 @@ function write(
             "$(blue)$(ts)$(green) thread...$(reset)",
         )
 
-        # Create a directory for the channel in the threads folder
-        threads_channel_dir = mkpath(joinpath(threads_dir, channel))
-
         # Set the path to the output file for the thread
         threads_path = joinpath(threads_channel_dir, "$(ts).json")
 
-        # Write the first bracket
-        open(threads_path, "w") do io
-            print(io, '[')
-        end
-
-        # Write the first portion of the thread
+        # Get the first portion of the thread
         replies = request(
             conversations_replies,
             @query(channel, limit, token, ts),
             pad_length
         )
-        write_thread(replies, threads_path)
+        new_threads = [new_threads; replies[:messages]]
 
-        # Write the next portions of the thread
+        # Get the next portions of the thread
         while get(replies, :has_more, false)
             println(
                 ' '^(pad_length + 5),
@@ -205,16 +186,15 @@ function write(
                 @query(channel, cursor, limit, token, ts),
                 pad_length,
             )
-            write_thread(replies, threads_path, comma=true)
+            new_threads = [new_threads; replies[:messages]]
         end
 
-        # Write the last bracket
-        open(threads_path, "a") do io
-            print(io, ']')
+        # Write the thread
+        open(threads_path, "w") do io
+            print(io, JSON3.write(new_threads))
         end
 
     end
-
 end
 
 println(
@@ -245,13 +225,13 @@ for index in eachindex(ids)
 
     # Set the path to the output file for the channel
     messages_channel_dir = joinpath(messages_dir, channel)
-    messages_path = joinpath(messages_channel_dir, "$(channel).json")
+    messages_path = joinpath(messages_channel_dir, "0.json")
 
     # Prepare an empty object to store the old messages
     old_messages = JSON3.Object()
 
-    # Prepare an empty buffer to store new messages
-    tmp_io = IOBuffer()
+    # Prepare a reference to an empty array of JSON objects to store new messages
+    new_messages = Ref{Vector{JSON3.Object}}([])
 
     # If the history of the channel
     # was written before, load it and
@@ -264,7 +244,7 @@ for index in eachindex(ids)
 
     # Write the first portion of the messages history
     history = request(conversations_history, @query(channel, limit, token), pad_length)
-    write(channel, history, pad_length, old_messages, tmp_io)
+    write(channel, history, pad_length, old_messages, new_messages)
 
     # Write the next portions of the messages history
     while get(history, :has_more, false)
@@ -283,32 +263,34 @@ for index in eachindex(ids)
             history,
             pad_length,
             old_messages,
-            tmp_io,
-            comma=true
+            new_messages,
         )
     end
 
     # If no old messages, write the new ones
     if isempty(old_messages)
-        new_content = String(take!(tmp_io))
-        if !isempty(new_content)
+        if !isempty(new_messages[])
             mkpath(messages_channel_dir)
             open(messages_path, "w") do io
-                print(io, "{\"cursor\": 0, \"messages\": [", new_content, "]}")
+                print(
+                    io,
+                    "{\"cursor\": 0, \"messages\": ",
+                    JSON3.write(reverse(new_messages[])),
+                    "}",
+                )
             end
         end
     # Otherwise, append the new messages (if there are any)
     else
-        new_content = String(take!(tmp_io))
-        if !isempty(new_content)
+        if !isempty(new_messages[])
             open(messages_path, "w") do io
                 print(
                     io,
-                    "{\"cursor\": $(old_messages[:cursor]), \"messages\": [",
-                    new_content,
+                    "{\"cursor\": $(old_messages[:cursor]), \"messages\": ",
+                    chop(JSON3.write(old_messages[:messages])),
                     ',',
-                    chop(JSON3.write(old_messages[:messages]), head=1, tail=0),
-                    '}'
+                    chop(JSON3.write(reverse(new_messages[])), head=1, tail=0),
+                    "}",
                 )
             end
         end
