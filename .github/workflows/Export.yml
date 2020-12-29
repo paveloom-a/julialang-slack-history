@@ -1,8 +1,8 @@
 name: Export the History
 
 on:
-  schedule:
-    - cron: '0 */1 * * *'
+#  schedule:
+#    - cron: '0 */1 * * *'
   workflow_dispatch:
 
 env:
