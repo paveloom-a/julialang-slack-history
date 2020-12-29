@@ -15,7 +15,7 @@ for dir in readdir(messages_dir, join=true)
     portion = JSON3.Object()
 
     # Get the path to the main history file
-    main_file_path = joinpath(dir, "$(basename(dir)).json")
+    main_file_path = joinpath(dir, "0.json")
 
     # Read the history inside the main file
     history = open(main_file_path, "r") do io
@@ -40,7 +40,7 @@ for dir in readdir(messages_dir, join=true)
 
         # For every portion of 100 messages
         for i in 1:fld(length(messages), 100)
-            portion = messages[end-99-100*(i-1):end-((i-1)*100)]
+            portion = messages[1+100*(i-1):i*100]
 
             # Spit it out to a separate file
             open(joinpath(dir, "$(cursor+1).json"), "w") do io
@@ -61,7 +61,7 @@ for dir in readdir(messages_dir, join=true)
             print(
                 io,
                 "{\"cursor\": $(cursor), \"messages\": ",
-                JSON3.write(messages[1:rem]),
+                JSON3.write(messages[end-rem+1:end]),
                 '}'
             )
         end
