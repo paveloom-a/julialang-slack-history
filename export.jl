@@ -230,23 +230,52 @@ for index in eachindex(ids)
     # Prepare an empty object to store the old messages
     old_messages = JSON3.Object()
 
-    # Prepare a reference to an empty array of JSON objects to store new messages
+    # Prepare a reference to an empty array of JSON
+    # objects to store portions of new messages
     new_messages = Ref{Vector{JSON3.Object}}([])
 
     # If the history of the channel
     # was written before, load it and
     # rewrite, removing the first bracket
     if isfile(messages_path)
-        old_messages = open(messages_path, "r") do io
+
+        # Prepare an empty array of JSON objects
+        # to store portions of old messages
+        old_messages_portions = Vector{JSON3.Object}[]
+
+        # Get the first portion of the old messages
+        portion = open(messages_path, "r") do io
             JSON3.read(io)
         end
+        old_messages_portions = [portion[:messages]; old_messages_portions]
+
+        # Get the cursor to the next portion
+        cursor = portion[:cursor]
+        i = cursor
+
+        # Get the next portions of the old messages
+        while i != 0
+            path = joinpath(messages_channel_dir, "$(i).json")
+            portion = open(path, "r") do io
+                JSON3.read(io)
+            end
+            old_messages_portions = [portion[:messages]; old_messages_portions]
+            i -= 1
+        end
+
+        # Combine all of the portions
+        old_messages = JSON3.read(
+            JSON3.write(
+                Dict(:cursor => cursor, :messages => old_messages_portions)
+            )
+        )
     end
 
-    # Write the first portion of the messages history
+    # Get the first portion of the messages history
     history = request(conversations_history, @query(channel, limit, token), pad_length)
     write(channel, history, pad_length, old_messages, new_messages)
 
-    # Write the next portions of the messages history
+    # Get the next portions of the messages history
     while get(history, :has_more, false)
         println(
             ' '^(pad_length + 5),
