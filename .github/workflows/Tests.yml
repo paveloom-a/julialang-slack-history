@@ -47,3 +47,7 @@ jobs:
         run: |
           julia --project=. export.jl
           julia --project=. check.jl
+      - name: Test the split
+        run: |
+          julia --project=. split.jl
+          julia --project=. check.jl
