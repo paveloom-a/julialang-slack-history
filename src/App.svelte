@@ -42,7 +42,7 @@
 </script>
 
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=Lato:wght@900&display=swap");
+  @import url("https://fonts.googleapis.com/css2?family=Lato:wght@300;@900&display=swap");
 
   #grid {
     display: grid;
@@ -71,6 +71,27 @@
     display: none;
   }
 
+  #grid > #history > #feed > .message {
+    display: grid;
+    grid-template-columns: [start] 36px [avatar-column] auto [end];
+  }
+
+  #grid > #history > #feed > .message > .avatar_column {
+    grid-column: start;
+  }
+
+  #grid > #history > #feed > .message > .body {
+    grid-column: avatar-column;
+  }
+
+  #grid > #history > #feed > .message > .body > .name {
+    font-weight: bold;
+  }
+
+  #grid > #history > #feed > .message > .body > .text {
+    font-weight: lighter;
+  }
+
   #grid > #history > #info {
     grid-row: channel-header;
   }
@@ -79,6 +100,7 @@
     background: #3f0e40;
     color: #ffffff;
     display: grid;
+    font-weight: bold;
     grid-column: start;
     grid-template-rows: [start] 64px [sidebar-header] auto [end];
     overflow: hidden;
@@ -141,7 +163,7 @@
     display: flex;
     margin-left: 10px;
     min-width: 0;
-    padding: 3px 0;
+    padding: 2px 0;
     position: relative;
     z-index: 0;
   }
@@ -160,11 +182,16 @@
     z-index: -1;
   }
 
-  #grid > #sidebar > #channels > .channel > span.text {
-    height: 100%;
+  #grid > #sidebar > #channels > .channel > .content {
+    display: flex;
+    margin-top: 3px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  #grid > #sidebar > #channels > .channel > .content > span.text {
+    margin-top: 1.5px;
   }
 </style>
 
@@ -177,22 +204,30 @@
           <span class="icon"><CollapseArrow />Channels</span>
         </div>
         {#await names}
-          <div class="channel"><span class="text">Loading...</span></div>
+          <div class="channel">
+            <div class="content">
+              <span class="text">Loading...</span>
+            </div>
+          </div>
         {:then}
           {#each channels as channel}
             <div class="channel" on:click={channelClick(channel)}>
                 <div class="channel-background"></div>
-                <span class="icon"><Hashtag /></span>
-                <span class="text">{names[channel]}</span>
+                <div class="content">
+                  <span class="icon"><Hashtag /></span>
+                  <span class="text">{names[channel]}</span>
+                </div>
             </div>
           {/each}
         {:catch}
           <div class="channel">
-            <span class="text">
-              Couldn't load the data.<br><br>
-              Check your Internet<br>
-              connection.
-            </span>
+            <div class="content">
+              <span class="text">
+                Couldn't load the data.<br><br>
+                Check your Internet<br>
+                connection.
+              </span>
+            </div>
           </div>
         {/await}
       </div>
@@ -205,7 +240,11 @@
             <div id="feed" use:test>
               {#each history.messages as message}
                 <div class="message">
-                  <div class="text">{message.text}</div>
+                  <div class="avatar_column"></div>
+                  <div class="body">
+                    <span class="name">{message.user}</span>
+                    <div class="text">{message.text}</div>
+                  </div>
                 </div>
               {/each}
             </div>
