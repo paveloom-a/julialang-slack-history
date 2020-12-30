@@ -7,6 +7,7 @@ using Test
 
 const messages_dir = joinpath(@__DIR__, "messages")
 const threads_dir = joinpath(@__DIR__, "threads")
+const users_dir = joinpath(@__DIR__, "users")
 
 function test(target)
     for dir in readdir(target, join=true)
@@ -28,5 +29,9 @@ end
 end
 
 @testset "Threads" begin
+    test(threads_dir)
+end
+
+@testset "Users" begin
     test(threads_dir)
 end

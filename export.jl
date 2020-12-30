@@ -22,6 +22,8 @@ const conversations = base * "/conversations"
 const conversations_list = conversations * ".list"
 const conversations_history = conversations * ".history"
 const conversations_replies = conversations * ".replies"
+const users = base * "/users"
+const users_info = users * ".info"
 
 # Error messages
 
@@ -101,11 +103,12 @@ end
 # Set a limit for pagination (messages and threads)
 limit = 200
 
-# Create directories for messages and threads (if they don't exist)
+# Create directories for messages, threads, and users (if they don't exist)
 const messages_dir = mkpath(joinpath(@__DIR__, "messages"))
 const threads_dir = mkpath(joinpath(@__DIR__, "threads"))
+const users_dir = mkpath(joinpath(@__DIR__, "users"))
 
-# Write the messages and threads
+# Write the messages, threads, and users
 function write(
     channel,
     history,
@@ -116,12 +119,6 @@ function write(
 )
     # Get the messages
     messages = history[:messages]
-
-    # Get the threads timestamps
-    threads = filter(!isempty, get.(messages, :thread_ts, ""))
-
-    # Get the number of threads
-    threads_num = length(threads)
 
     # If no old messages, write the current history
     if isempty(old_messages)
@@ -137,13 +134,19 @@ function write(
         inds = findall(ts -> !(ts in old_ts), current_ts)
 
         # Get the unique messages
-        messages = messages[inds]
+        unique_messages = messages[inds]
 
         # Append if found any
-        if !isempty(messages)
-            new_messages[] = [new_messages[]; messages]
+        if !isempty(unique_messages)
+            new_messages[] = [new_messages[]; unique_messages]
         end
     end
+
+    # Get the threads timestamps
+    threads = filter(!isempty, get.(messages, :thread_ts, ""))
+
+    # Get the number of threads
+    threads_num = length(threads)
 
     # Create a directory for the channel in the threads folder
     threads_channel_dir = mkpath(joinpath(threads_dir, channel))
@@ -165,7 +168,7 @@ function write(
         )
 
         # Set the path to the output file for the thread
-        threads_path = joinpath(threads_channel_dir, "$(ts).json")
+        thread_path = joinpath(threads_channel_dir, "$(ts).json")
 
         # Get the first portion of the thread
         replies = request(
@@ -191,8 +194,46 @@ function write(
         end
 
         # Write the thread
-        open(threads_path, "w") do io
+        open(thread_path, "w") do io
             print(io, JSON3.write(new_threads))
+        end
+
+    end
+
+    # Get the user IDs
+    message_users = filter(!isempty, get.(messages, :user, ""))
+    reply_users = vcat(filter(!isempty, get.(messages, :reply_users, ""))...)
+    unique_users = unique([message_users; reply_users])
+
+    # Get the number of users
+    users_num = length(unique_users)
+
+    # Write the users
+    for (index, user) in pairs(unique_users)
+
+        # Get a counter string
+        counter = lpad("($(index)/$(users_num))", pad_length)
+
+        # Print the info
+        println(
+            ' '^5,
+            "$(green)$(counter) ➥ Exporting the ",
+            "$(blue)$(user)$(green)'s user info...$(reset)",
+        )
+
+        # Set the path to the output file for the user
+        user_path = joinpath(users_dir, "$(user).json")
+
+        # Get the info about the user
+        info = request(
+            users_info,
+            @query(token, user),
+            pad_length
+        )
+
+        # Write the info
+        open(user_path, "w") do io
+            print(io, JSON3.write(info))
         end
 
     end

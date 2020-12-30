@@ -7,5 +7,6 @@ Manifest.toml
 # Local tests
 messages
 threads
+users
 channels.json
 names.json
