@@ -16,7 +16,7 @@
 
 	async function getHistory(channel) {
     const res = await fetch(
-      `https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/history/messages/${channel}/${channel}.json`
+      `https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/history/messages/${channel}/0.json`
     );
     history = await res.json();
 	}
@@ -203,7 +203,7 @@
             <div id="info"><span class="text">Loading...</span></div>
           {:then}
             <div id="feed" use:test>
-              {#each [...history.messages].reverse() as message}
+              {#each history.messages as message}
                 <div class="message">
                   <div class="text">{message.text}</div>
                 </div>
