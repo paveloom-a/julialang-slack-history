@@ -111,6 +111,7 @@ function write(
     history,
     pad_length,
     old_messages,
+    old_ts,
     new_messages,
 )
     # Get the messages
@@ -129,16 +130,16 @@ function write(
         end
     # Otherwise, determine what needs to be appended
     else
-        # Get the timestamps from both packs of messages
-        current_timestamps = [message[:ts] for message in messages]
-        old_timestamps = [message[:ts] for message in old_messages[:messages]]
+        # Get the current timestamps from the new messages
+        current_ts = [message[:ts] for message in messages]
 
-        # Determine the indices of unique timestamps
-        inds = findall(timestamp -> !(timestamp in old_timestamps), current_timestamps)
+        # Determine the indices of unique IDs
+        inds = findall(ts -> !(ts in old_ts), current_ts)
 
         # Get the unique messages
         messages = messages[inds]
 
+        # Append if found any
         if !isempty(messages)
             new_messages[] = [new_messages[]; messages]
         end
@@ -230,6 +231,13 @@ for index in eachindex(ids)
     # Prepare an empty object to store the old messages
     old_messages = JSON3.Object()
 
+    # Prepare a variable to store the length
+    # of the first portion of messages
+    old_messages_fpl = 0
+
+    # Prepare an empty array to store old timestamps
+    old_ts = String[]
+
     # Prepare a reference to an empty array of JSON
     # objects to store portions of new messages
     new_messages = Ref{Vector{JSON3.Object}}([])
@@ -247,7 +255,8 @@ for index in eachindex(ids)
         portion = open(messages_path, "r") do io
             JSON3.read(io)
         end
-        old_messages_portions = [portion[:messages]; old_messages_portions]
+        old_messages_portions = [old_messages_portions; portion[:messages]]
+        old_messages_fpl = length(old_messages_portions)
 
         # Get the cursor to the next portion
         cursor = portion[:cursor]
@@ -259,7 +268,7 @@ for index in eachindex(ids)
             portion = open(path, "r") do io
                 JSON3.read(io)
             end
-            old_messages_portions = [portion[:messages]; old_messages_portions]
+            old_messages_portions = [old_messages_portions; portion[:messages]]
             i -= 1
         end
 
@@ -269,11 +278,14 @@ for index in eachindex(ids)
                 Dict(:cursor => cursor, :messages => old_messages_portions)
             )
         )
+
+        # Get old timestamps
+        old_ts = [message[:ts] for message in old_messages_portions]
     end
 
     # Get the first portion of the messages history
     history = request(conversations_history, @query(channel, limit, token), pad_length)
-    write(channel, history, pad_length, old_messages, new_messages)
+    write(channel, history, pad_length, old_messages, old_ts, new_messages)
 
     # Get the next portions of the messages history
     while get(history, :has_more, false)
@@ -292,6 +304,7 @@ for index in eachindex(ids)
             history,
             pad_length,
             old_messages,
+            old_ts,
             new_messages,
         )
     end
@@ -316,7 +329,7 @@ for index in eachindex(ids)
                 print(
                     io,
                     "{\"cursor\": $(old_messages[:cursor]), \"messages\": ",
-                    chop(JSON3.write(old_messages[:messages])),
+                    chop(JSON3.write(old_messages[:messages][1:old_messages_fpl])),
                     ',',
                     chop(JSON3.write(reverse(new_messages[])), head=1, tail=0),
                     "}",
