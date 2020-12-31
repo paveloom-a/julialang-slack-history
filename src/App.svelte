@@ -34,7 +34,7 @@
 	}
 
   function scrollDown(el) {
-    el.scrollTop = el.scrollHeight;
+    el.scrollTop = el.scrollHeight + 200;
   }
 
   async function getUsersInfo(history) {
@@ -47,8 +47,22 @@
         `https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/history/users/${user}.json`
       );
       let info = await res.json();
-      usersInfo[user] = info;
-    })
+      usersInfo[user] = info.user;
+    });
+    return Promise.all(result);
+  }
+
+  async function fetchAvatars(history, usersInfo) {
+    let users = [];
+    history.messages.forEach(message => {
+      message.hasOwnProperty('user') && users.push(message.user);
+    });
+    let result = users.map(async(user) => {
+      const res = await fetch(
+        usersInfo[user].profile.image_48, {mode: 'no-cors'}
+      );
+      let avatar = await res.blob();
+    });
     return Promise.all(result);
   }
 
@@ -58,11 +72,11 @@
 </script>
 
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=Lato:wght@300;@900&display=swap");
+  @import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;900&display=swap");
 
   #grid {
     display: grid;
-    grid-template-columns: [start] max(17%, 220px) [sidebar] auto [end];
+    grid-template-columns: [start] 260px [sidebar] auto [end];
     height: 100%;
     width: 100%;
   }
@@ -72,6 +86,28 @@
     grid-column: sidebar;
     grid-template-rows: [start] 64px [channel-header] auto [end];
     overflow: hidden;
+    position: relative;
+  }
+
+  #grid > #history::after {
+    background-image: linear-gradient(to top, #ffffff, rgba(0,0,0,0));
+    bottom: 0;
+    content: "";
+    grid-row: channel-header;
+    height: 24px;
+    position: absolute;
+    width: 100%;
+  }
+
+  #grid > #history::before {
+    background-image: linear-gradient(to bottom, #ffffff, rgba(0,0,0,0));
+    content: "";
+    grid-row: channel-header;
+    height: 24px;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 1;
   }
 
   #grid > #history > #feed {
@@ -80,6 +116,7 @@
     flex-direction: column;
     grid-row: channel-header;
     overflow-y: scroll;
+    padding: 24px 28px;
     scrollbar-width: none;
   }
 
@@ -96,8 +133,14 @@
     grid-column: start;
   }
 
+  #grid > #history > #feed > .message > .avatar_column > img {
+    max-width: 100%;
+    padding: 12px 0 0 0;
+  }
+
   #grid > #history > #feed > .message > .body {
     grid-column: avatar-column;
+    padding: 8px 12px;
   }
 
   #grid > #history > #feed > .message > .body > .name {
@@ -105,11 +148,17 @@
   }
 
   #grid > #history > #feed > .message > .body > .text {
-    font-weight: lighter;
+    font-weight: regular;
   }
 
   #grid > #history > #info {
-    grid-row: channel-header;
+    grid-row: start / end;
+    margin: auto;
+    text-align: center;
+  }
+
+  #grid > #history > #info > #text {
+    font-size: 24px;
   }
 
   #grid > #sidebar {
@@ -124,7 +173,7 @@
   }
 
   #grid > #sidebar::after {
-    background-image: linear-gradient(to top, #3F0E40, rgba(63,14,64,0));
+    background-image: linear-gradient(to top, #3F0E40, rgba(0,0,0,0));
     bottom: 0;
     content: "";
     grid-row: sidebar-header;
@@ -135,7 +184,7 @@
   }
 
   #grid > #sidebar::before {
-    background-image: linear-gradient(to bottom, #3F0E40, rgba(63,14,64,0));
+    background-image: linear-gradient(to bottom, #3F0E40, rgba(0,0,0,0));
     content: "";
     grid-row: sidebar-header;
     height: 24px;
@@ -174,12 +223,10 @@
   }
 
   #grid > #sidebar > #channels > .channel {
-    align-items: center;
     cursor: pointer;
-    display: flex;
     margin-left: 10px;
     min-width: 0;
-    padding: 2px 0;
+    padding: 0 0 4px 0;
     position: relative;
     z-index: 0;
   }
@@ -206,8 +253,8 @@
     white-space: nowrap;
   }
 
-  #grid > #sidebar > #channels > .channel > .content > span.text {
-    margin-top: 1.5px;
+  #grid > #sidebar > #channels > .channel > .content > .icon {
+    display: flex;
   }
 </style>
 
@@ -237,7 +284,7 @@
               <div class="channel" on:click={channelClick(channel)}>
                   <div class="channel-background"></div>
                   <div class="content">
-                    <span class="icon"><Hashtag /></span>
+                    <div class="icon"><Hashtag /></div>
                     <span class="text">{names[channel]}</span>
                   </div>
               </div>
@@ -259,39 +306,65 @@
     <div id="history">
       {#if showHistory}
           {#await history}
-            <div id="info"><span class="text">Loading history...</span></div>
+            <div id="info">
+              <span id="text">
+                Loading history...
+              </span>
+            </div>
           {:then}
             {#await getUsersInfo(history)}
-              <div id="info"><span class="text">Loading users...</span></div>
-            {:then}
-              <div id="feed" use:scrollDown>
-                {#each history.messages as message}
-                  <div class="message">
-                    <div class="avatar_column"></div>
-                    <div class="body">
-                      {#if message.hasOwnProperty('user')}
-                        <span class="name">
-                          {usersInfo[message.user].user.real_name}
-                        </span>
-                      {:else if message.hasOwnProperty('bot_id')}
-                        <span class="name">Bot</span>
-                      {:else}
-                        <span class="name">Else</span>
-                      {/if}
-                      <div class="text">{message.text}</div>
-                    </div>
-                  </div>
-                {/each}
+              <div id="info">
+                <span id="text">
+                  Loading users...
+                </span>
               </div>
+            {:then}
+              {#await fetchAvatars(history, usersInfo)}
+                <div id="info">
+                  <span id="text">
+                    Loading avatars...
+                  </span>
+                </div>
+              {:then}
+                <div id="feed" use:scrollDown>
+                  {#each history.messages as message}
+                    <div class="message">
+                      <div class="avatar_column">
+                        <img
+                          src={usersInfo[message.user].profile.image_48}
+                          alt="${message.user}'s avatar"
+                        >
+                      </div>
+                      <div class="body">
+                        {#if message.hasOwnProperty('user')}
+                          <span class="name">
+                            {usersInfo[message.user].real_name}
+                          </span>
+                        {:else if message.hasOwnProperty('bot_id')}
+                          <span class="name">Bot</span>
+                        {:else}
+                          <span class="name">Else</span>
+                        {/if}
+                        <div class="text">{message.text}</div>
+                      </div>
+                    </div>
+                  {/each}
+                </div>
+              {/await}
             {/await}
           {:catch}
             <div id="info">
-              Nope.
+              <span id="text">
+                Whoops! Looks like this channel doesn't<br>
+                have any history stored yet.
+              </span>
             </div>
           {/await}
       {:else}
         <div id="info">
-          hello?
+          <span id="text">
+            Choose a channel to proceed.
+          </span>
         </div>
       {/if}
     </div>
