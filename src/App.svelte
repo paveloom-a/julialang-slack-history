@@ -28,8 +28,11 @@
   let history = [];
   let usersInfo = [];
 
+  let selected = "";
+
   function channelClick(channel) {
     showHistory = true;
+    selected = channel;
 		history = getHistory(channel);
 	}
 
@@ -151,6 +154,21 @@
     font-weight: regular;
   }
 
+  #grid > #history > #header {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    align-items: center;
+    border-bottom: 1px solid rgba(29,28,29,.13);
+    display: flex;
+    font-weight: bold;
+    grid-row: start;
+    padding: 0 19px 0 16px;
+    user-select: none;
+  }
+
   #grid > #history > #info {
     grid-row: start / end;
     margin: auto;
@@ -162,6 +180,11 @@
   }
 
   #grid > #sidebar {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
     background: #3f0e40;
     color: #ffffff;
     display: grid;
@@ -170,6 +193,7 @@
     grid-template-rows: [start] 64px [sidebar-header] auto [end];
     overflow: hidden;
     position: relative;
+    user-select: none;
   }
 
   #grid > #sidebar::after {
@@ -225,7 +249,6 @@
   #grid > #sidebar > #channels > .channel {
     cursor: pointer;
     margin-left: 10px;
-    min-width: 0;
     padding: 0 0 4px 0;
     position: relative;
     z-index: 0;
@@ -245,16 +268,25 @@
     z-index: -1;
   }
 
+  #grid > #sidebar > #channels > .channel > .channel-background.selected {
+    display: block;
+    background-color: #1164A3;
+  }
+
   #grid > #sidebar > #channels > .channel > .content {
     display: flex;
     margin-top: 3px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    min-width: 0;
   }
 
   #grid > #sidebar > #channels > .channel > .content > .icon {
     display: flex;
+  }
+
+  #grid > #sidebar > #channels > .channel > .content > .text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 </style>
 
@@ -282,7 +314,10 @@
           {:then}
             {#each channels as channel}
               <div class="channel" on:click={channelClick(channel)}>
-                  <div class="channel-background"></div>
+                  <div
+                    class="channel-background"
+                    class:selected="{selected === channel}">
+                  </div>
                   <div class="content">
                     <div class="icon"><Hashtag /></div>
                     <span class="text">{names[channel]}</span>
@@ -326,6 +361,7 @@
                   </span>
                 </div>
               {:then}
+                <div id="header">#{names[selected]}</div>
                 <div id="feed" use:scrollDown>
                   {#each history.messages as message}
                     <div class="message">
