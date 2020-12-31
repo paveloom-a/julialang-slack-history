@@ -51,12 +51,12 @@
         `https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/history/users/${user}.json`
       );
       let info = await res.json();
-      usersInfo[user] = info.user;
+      usersInfo[user] = info;
     });
     return Promise.all(result);
   }
 
-  async function fetchAvatars(history, usersInfo) {
+  async function fetchAvatars(usersInfo) {
     let result = users.map(async(user) => {
       const res = await fetch(
         usersInfo[user].profile.image_48, {mode: 'no-cors'}
@@ -351,7 +351,7 @@
                 </span>
               </div>
             {:then}
-              {#await fetchAvatars(history, usersInfo)}
+              {#await fetchAvatars(usersInfo)}
                 <div id="info">
                   <span id="text">
                     Loading avatars...
