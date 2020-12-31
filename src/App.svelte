@@ -26,6 +26,7 @@
 
   let showHistory = false;
   let history = [];
+  let users = [];
   let usersInfo = [];
 
   let selected = "";
@@ -41,7 +42,7 @@
   }
 
   async function getUsersInfo(history) {
-    let users = [];
+    users = [];
     history.messages.forEach(message => {
       message.hasOwnProperty('user') && users.push(message.user);
     });
@@ -56,15 +57,11 @@
   }
 
   async function fetchAvatars(history, usersInfo) {
-    let users = [];
-    history.messages.forEach(message => {
-      message.hasOwnProperty('user') && users.push(message.user);
-    });
     let result = users.map(async(user) => {
       const res = await fetch(
         usersInfo[user].profile.image_48, {mode: 'no-cors'}
       );
-      let avatar = await res.blob();
+      return await res.blob();
     });
     return Promise.all(result);
   }
@@ -151,7 +148,7 @@
   }
 
   #grid > #history > #feed > .message > .body > .text {
-    font-weight: regular;
+    overflow-wrap: anywhere;
   }
 
   #grid > #history > #header {
