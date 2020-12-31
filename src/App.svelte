@@ -26,14 +26,30 @@
 
   let showHistory = false;
   let history = [];
+  let usersInfo = [];
 
   function channelClick(channel) {
     showHistory = true;
 		history = getHistory(channel);
 	}
 
-  function test(el) {
+  function scrollDown(el) {
     el.scrollTop = el.scrollHeight;
+  }
+
+  async function getUsersInfo(history) {
+    let users = [];
+    history.messages.forEach(message => {
+      message.hasOwnProperty('user') && users.push(message.user);
+    });
+    let result = users.map(async(user) => {
+      const res = await fetch(
+        `https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/history/users/${user}.json`
+      );
+      let info = await res.json();
+      usersInfo[user] = info;
+    })
+    return Promise.all(result);
   }
 
   // Components
@@ -203,51 +219,71 @@
         <div id="header">
           <span class="icon"><CollapseArrow />Channels</span>
         </div>
-        {#await names}
+        {#await channels}
           <div class="channel">
             <div class="content">
-              <span class="text">Loading...</span>
+              <span class="text">Loading channels...</span>
             </div>
           </div>
         {:then}
-          {#each channels as channel}
-            <div class="channel" on:click={channelClick(channel)}>
-                <div class="channel-background"></div>
-                <div class="content">
-                  <span class="icon"><Hashtag /></span>
-                  <span class="text">{names[channel]}</span>
-                </div>
+          {#await names}
+            <div class="channel">
+              <div class="content">
+                <span class="text">Loading names...</span>
+              </div>
             </div>
-          {/each}
-        {:catch}
-          <div class="channel">
-            <div class="content">
-              <span class="text">
-                Couldn't load the data.<br><br>
-                Check your Internet<br>
-                connection.
-              </span>
+          {:then}
+            {#each channels as channel}
+              <div class="channel" on:click={channelClick(channel)}>
+                  <div class="channel-background"></div>
+                  <div class="content">
+                    <span class="icon"><Hashtag /></span>
+                    <span class="text">{names[channel]}</span>
+                  </div>
+              </div>
+            {/each}
+          {:catch}
+            <div class="channel">
+              <div class="content">
+                <span class="text">
+                  Couldn't load the data.<br><br>
+                  Check your Internet<br>
+                  connection.
+                </span>
+              </div>
             </div>
-          </div>
+          {/await}
         {/await}
       </div>
     </div>
     <div id="history">
       {#if showHistory}
           {#await history}
-            <div id="info"><span class="text">Loading...</span></div>
+            <div id="info"><span class="text">Loading history...</span></div>
           {:then}
-            <div id="feed" use:test>
-              {#each history.messages as message}
-                <div class="message">
-                  <div class="avatar_column"></div>
-                  <div class="body">
-                    <span class="name">{message.user}</span>
-                    <div class="text">{message.text}</div>
+            {#await getUsersInfo(history)}
+              <div id="info"><span class="text">Loading users...</span></div>
+            {:then}
+              <div id="feed" use:scrollDown>
+                {#each history.messages as message}
+                  <div class="message">
+                    <div class="avatar_column"></div>
+                    <div class="body">
+                      {#if message.hasOwnProperty('user')}
+                        <span class="name">
+                          {usersInfo[message.user].user.real_name}
+                        </span>
+                      {:else if message.hasOwnProperty('bot_id')}
+                        <span class="name">Bot</span>
+                      {:else}
+                        <span class="name">Else</span>
+                      {/if}
+                      <div class="text">{message.text}</div>
+                    </div>
                   </div>
-                </div>
-              {/each}
-            </div>
+                {/each}
+              </div>
+            {/await}
           {:catch}
             <div id="info">
               Nope.
