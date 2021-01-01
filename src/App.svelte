@@ -1,4 +1,13 @@
 <script>
+  "use strict";
+
+  // Highlighting
+  import hljs from "./libs/julia.highlight.min.js";
+
+  function highlightBlock(el) {
+    hljs.highlightBlock(el);
+  }
+
   // Data
 	async function getChannels() {
     const res = await fetch(
@@ -64,6 +73,21 @@
       return await res.blob();
     });
     return Promise.all(result);
+  }
+
+  function filterText(el) {
+    // Code filters
+    el.innerHTML = el.textContent.replace(
+      /```([\s\S]+?)```/g,
+      '<pre><code language="julia">$1</code></pre>'
+    ).replace(
+      /`([\s\S]+?)`/g,
+      '<span><code language="julia">$1</code></span>'
+    );
+    let code_elements = el.getElementsByTagName('code');
+    for (let item of code_elements) {
+      hljs.highlightBlock(item);
+    };
   }
 
   // Components
@@ -141,6 +165,7 @@
   #grid > #history > #feed > .message > .body {
     grid-column: avatar-column;
     padding: 8px 12px;
+    overflow-x: hidden;
   }
 
   #grid > #history > #feed > .message > .body > .name {
@@ -378,7 +403,7 @@
                         {:else}
                           <span class="name">Else</span>
                         {/if}
-                        <div class="text">{message.text}</div>
+                        <div class="text" use:filterText>{message.text}</div>
                       </div>
                     </div>
                   {/each}
