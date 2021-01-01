@@ -233,7 +233,7 @@ function write(
 
         # Write the info
         open(user_path, "w") do io
-            print(io, JSON3.write(info))
+            print(io, JSON3.write(info[:user]))
         end
 
     end

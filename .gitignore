@@ -10,3 +10,14 @@ threads
 users
 channels.json
 names.json
+
+# Yarn files
+.yarn/*
+!.yarn/cache
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+
+# Build
+public/build
