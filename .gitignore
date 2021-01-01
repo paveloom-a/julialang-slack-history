@@ -6,6 +6,7 @@ Project.toml
 Manifest.toml
 export.jl
 check.jl
+split.jl
 
 # Yarn files
 .yarn/*
