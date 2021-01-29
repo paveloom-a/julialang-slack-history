@@ -44,8 +44,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["rollup-plugin-livereload", "npm:2.0.0"],
             ["rollup-plugin-svelte", "virtual:028db9e2787b21c18198f820b9eeb7d698abe629b59f0a70a4c6ceb399ef863a46d7dc8d6f949efde2a494573bfa6ed659690eaeac96ac82d1e4e7c03b886c2c#npm:7.0.0"],
             ["rollup-plugin-terser", "virtual:028db9e2787b21c18198f820b9eeb7d698abe629b59f0a70a4c6ceb399ef863a46d7dc8d6f949efde2a494573bfa6ed659690eaeac96ac82d1e4e7c03b886c2c#npm:7.0.2"],
+            ["sass", "npm:1.32.0"],
             ["sirv-cli", "npm:1.0.10"],
-            ["svelte", "npm:3.31.0"]
+            ["svelte", "npm:3.31.0"],
+            ["svelte-preprocess", "virtual:028db9e2787b21c18198f820b9eeb7d698abe629b59f0a70a4c6ceb399ef863a46d7dc8d6f949efde2a494573bfa6ed659690eaeac96ac82d1e4e7c03b886c2c#npm:4.6.1"]
           ],
           "linkType": "SOFT",
         }]
@@ -219,11 +221,30 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["@types/pug", [
+        ["npm:2.0.4", {
+          "packageLocation": "./.yarn/cache/@types-pug-npm-2.0.4-a232f44f32-f4470eb188.zip/node_modules/@types/pug/",
+          "packageDependencies": [
+            ["@types/pug", "npm:2.0.4"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["@types/resolve", [
         ["npm:1.17.1", {
           "packageLocation": "./.yarn/cache/@types-resolve-npm-1.17.1-9a8396bef2-8e72a73574.zip/node_modules/@types/resolve/",
           "packageDependencies": [
             ["@types/resolve", "npm:1.17.1"],
+            ["@types/node", "npm:14.14.14"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@types/sass", [
+        ["npm:1.16.0", {
+          "packageLocation": "./.yarn/cache/@types-sass-npm-1.16.0-aca7a96a6f-e95d14da2d.zip/node_modules/@types/sass/",
+          "packageDependencies": [
+            ["@types/sass", "npm:1.16.0"],
             ["@types/node", "npm:14.14.14"]
           ],
           "linkType": "HARD",
@@ -602,6 +623,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/delegates-npm-1.0.0-9b1942d75f-7459e34d29.zip/node_modules/delegates/",
           "packageDependencies": [
             ["delegates", "npm:1.0.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["detect-indent", [
+        ["npm:6.0.0", {
+          "packageLocation": "./.yarn/cache/detect-indent-npm-6.0.0-9f7d77378e-ad06194141.zip/node_modules/detect-indent/",
+          "packageDependencies": [
+            ["detect-indent", "npm:6.0.0"]
           ],
           "linkType": "HARD",
         }]
@@ -1129,8 +1159,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["rollup-plugin-livereload", "npm:2.0.0"],
             ["rollup-plugin-svelte", "virtual:028db9e2787b21c18198f820b9eeb7d698abe629b59f0a70a4c6ceb399ef863a46d7dc8d6f949efde2a494573bfa6ed659690eaeac96ac82d1e4e7c03b886c2c#npm:7.0.0"],
             ["rollup-plugin-terser", "virtual:028db9e2787b21c18198f820b9eeb7d698abe629b59f0a70a4c6ceb399ef863a46d7dc8d6f949efde2a494573bfa6ed659690eaeac96ac82d1e4e7c03b886c2c#npm:7.0.2"],
+            ["sass", "npm:1.32.0"],
             ["sirv-cli", "npm:1.0.10"],
-            ["svelte", "npm:3.31.0"]
+            ["svelte", "npm:3.31.0"],
+            ["svelte-preprocess", "virtual:028db9e2787b21c18198f820b9eeb7d698abe629b59f0a70a4c6ceb399ef863a46d7dc8d6f949efde2a494573bfa6ed659690eaeac96ac82d1e4e7c03b886c2c#npm:4.6.1"]
           ],
           "linkType": "SOFT",
         }]
@@ -1228,6 +1260,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["mime-types", "npm:2.1.27"],
             ["mime-db", "npm:1.44.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["min-indent", [
+        ["npm:1.0.1", {
+          "packageLocation": "./.yarn/cache/min-indent-npm-1.0.1-77031f50e1-c3aeea46bc.zip/node_modules/min-indent/",
+          "packageDependencies": [
+            ["min-indent", "npm:1.0.1"]
           ],
           "linkType": "HARD",
         }]
@@ -1687,6 +1728,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["sass", [
+        ["npm:1.32.0", {
+          "packageLocation": "./.yarn/cache/sass-npm-1.32.0-b352037bd8-3d18acd938.zip/node_modules/sass/",
+          "packageDependencies": [
+            ["sass", "npm:1.32.0"],
+            ["chokidar", "npm:3.4.3"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["semiver", [
         ["npm:1.1.0", {
           "packageLocation": "./.yarn/cache/semiver-npm-1.1.0-74aef11f2f-d38d939f8f.zip/node_modules/semiver/",
@@ -1866,6 +1917,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["strip-indent", [
+        ["npm:3.0.0", {
+          "packageLocation": "./.yarn/cache/strip-indent-npm-3.0.0-519e75a28d-4a7860e943.zip/node_modules/strip-indent/",
+          "packageDependencies": [
+            ["strip-indent", "npm:3.0.0"],
+            ["min-indent", "npm:1.0.1"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["supports-color", [
         ["npm:5.5.0", {
           "packageLocation": "./.yarn/cache/supports-color-npm-5.5.0-183ac537bc-edacee6425.zip/node_modules/supports-color/",
@@ -1889,6 +1950,70 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/svelte-npm-3.31.0-a47aab0b80-16a09376f3.zip/node_modules/svelte/",
           "packageDependencies": [
             ["svelte", "npm:3.31.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["svelte-preprocess", [
+        ["npm:4.6.1", {
+          "packageLocation": "./.yarn/unplugged/svelte-preprocess-virtual-2defe0053c/node_modules/svelte-preprocess/",
+          "packageDependencies": [
+            ["svelte-preprocess", "npm:4.6.1"]
+          ],
+          "linkType": "SOFT",
+        }],
+        ["virtual:028db9e2787b21c18198f820b9eeb7d698abe629b59f0a70a4c6ceb399ef863a46d7dc8d6f949efde2a494573bfa6ed659690eaeac96ac82d1e4e7c03b886c2c#npm:4.6.1", {
+          "packageLocation": "./.yarn/unplugged/svelte-preprocess-virtual-2defe0053c/node_modules/svelte-preprocess/",
+          "packageDependencies": [
+            ["svelte-preprocess", "virtual:028db9e2787b21c18198f820b9eeb7d698abe629b59f0a70a4c6ceb399ef863a46d7dc8d6f949efde2a494573bfa6ed659690eaeac96ac82d1e4e7c03b886c2c#npm:4.6.1"],
+            ["@babel/core", null],
+            ["@types/babel__core", null],
+            ["@types/coffeescript", null],
+            ["@types/less", null],
+            ["@types/postcss", null],
+            ["@types/postcss-load-config", null],
+            ["@types/pug", "npm:2.0.4"],
+            ["@types/sass", "npm:1.16.0"],
+            ["@types/stylus", null],
+            ["@types/sugarss", null],
+            ["@types/svelte", null],
+            ["@types/typescript", null],
+            ["coffeescript", null],
+            ["detect-indent", "npm:6.0.0"],
+            ["less", null],
+            ["node-sass", null],
+            ["postcss", null],
+            ["postcss-load-config", null],
+            ["pug", null],
+            ["sass", "npm:1.32.0"],
+            ["strip-indent", "npm:3.0.0"],
+            ["stylus", null],
+            ["sugarss", null],
+            ["svelte", "npm:3.31.0"],
+            ["typescript", null]
+          ],
+          "packagePeers": [
+            "@babel/core",
+            "@types/babel__core",
+            "@types/coffeescript",
+            "@types/less",
+            "@types/postcss-load-config",
+            "@types/postcss",
+            "@types/stylus",
+            "@types/sugarss",
+            "@types/svelte",
+            "@types/typescript",
+            "coffeescript",
+            "less",
+            "node-sass",
+            "postcss-load-config",
+            "postcss",
+            "pug",
+            "sass",
+            "stylus",
+            "sugarss",
+            "svelte",
+            "typescript"
           ],
           "linkType": "HARD",
         }]
