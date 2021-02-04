@@ -22,6 +22,8 @@ const conversations = base * "/conversations"
 const conversations_list = conversations * ".list"
 const conversations_history = conversations * ".history"
 const conversations_replies = conversations * ".replies"
+const bots = base * "/bots"
+const bots_info = bots * ".info"
 const users = base * "/users"
 const users_info = users * ".info"
 
@@ -224,16 +226,35 @@ function write(
         # Set the path to the output file for the user
         user_path = joinpath(users_dir, "$(user).json")
 
-        # Get the info about the user
-        info = request(
-            users_info,
-            @query(token, user),
-            pad_length
-        )
+        # Check if the user is actually a bot
+        if startswith(user, "U")
 
-        # Write the info
-        open(user_path, "w") do io
-            print(io, JSON3.write(info[:user]))
+            # Get the info about the user
+            info = request(
+                users_info,
+                @query(token, user),
+                pad_length
+            )
+
+            # Write the info
+            open(user_path, "w") do io
+                print(io, JSON3.write(info[:user]))
+            end
+
+        else
+
+            # Get the info about the bot
+            info = request(
+                bots_info,
+                @query(token, user),
+                pad_length
+            )
+
+            # Write the info
+            open(user_path, "w") do io
+                print(io, JSON3.write(info[:bot]))
+            end
+
         end
 
     end
