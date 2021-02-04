@@ -243,7 +243,7 @@ function write(
 
         else
 
-            # Create an alias
+            # Copy the ID to another variable
             bot = user
 
             # Get the info about the bot
