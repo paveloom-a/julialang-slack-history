@@ -75,7 +75,7 @@
     return Promise.all(result);
   }
 
-  function filterText(el) {
+  function formatText(el) {
     // Code filters
     el.innerHTML = el.textContent.replace(
       /```([\s\S]+?)```/g,
@@ -83,6 +83,16 @@
     ).replace(
       /`([\s\S]+?)`/g,
       '<span><code language="julia">$1</code></span>'
+    // Mentions
+    ).replace(
+      /<@(.*)>/g,
+      function (match, capture) {
+        if (capture in usersInfo) {
+          return '<span class="mention">@' + usersInfo[capture].name + '</span>';
+        } else {
+          return match;
+        }
+      }
     );
     let code_elements = el.getElementsByTagName('code');
     for (let item of code_elements) {
@@ -158,6 +168,12 @@
             }
             > .text {
               overflow-wrap: anywhere;
+              > :global(.mention) {
+                background: rgba(29,155,209,.1);
+                color: rgba(18,100,163,1);
+                padding: 0 2px 1px 2px;
+                border-radius: 3px;
+              }
             }
           }
         }
@@ -375,7 +391,7 @@
                         {:else}
                           <span class="name">Else</span>
                         {/if}
-                        <div class="text" use:filterText>{message.text}</div>
+                        <div class="text" use:formatText>{message.text}</div>
                       </div>
                     </div>
                   {/each}
