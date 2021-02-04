@@ -243,10 +243,13 @@ function write(
 
         else
 
+            # Create an alias
+            bot = user
+
             # Get the info about the bot
             info = request(
                 bots_info,
-                @query(token, user),
+                @query(token, bot),
                 pad_length
             )
 
