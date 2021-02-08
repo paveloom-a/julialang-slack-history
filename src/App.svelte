@@ -4,10 +4,6 @@
   // Highlighting
   import hljs from "./libs/julia.highlight.min.js";
 
-  function highlightBlock(el) {
-    hljs.highlightBlock(el);
-  }
-
   // Data
 	async function getChannels() {
     const res = await fetch(
