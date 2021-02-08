@@ -380,9 +380,15 @@
                     <div class="message">
                       <div class="avatar_column">
                         {#if message.hasOwnProperty('user')}
-                          <img src={usersInfo[message.user].profile.image_48}>
+                          <img
+                            src={usersInfo[message.user].profile.image_48}
+                            alt="${usersInfo[message.user].real_name}'s avatar"
+                          >
                         {:else}
-                          <img src={usersInfo[message.bot_id].icons.image_48}>
+                          <img
+                            src={usersInfo[message.bot_id].icons.image_48}
+                            alt="${usersInfo[message.bot_id].name}'s avatar"
+                          >
                         {/if}
                       </div>
                       <div class="body">
