@@ -67,9 +67,16 @@
 
   async function fetchAvatars(usersInfo) {
     let result = users.map(async(user) => {
-      const res = await fetch(
-        usersInfo[user].profile.image_48, {mode: 'no-cors'}
-      );
+      let res;
+      if (user.startsWith('U')) {
+        res = await fetch(
+          usersInfo[user].profile.image_48, {mode: 'no-cors'}
+        );
+      } else {
+        res = await fetch(
+          usersInfo[user].icons.image_48, {mode: 'no-cors'}
+        );
+      }
       return await res.blob();
     });
     return Promise.all(result);
@@ -377,12 +384,9 @@
                     <div class="message">
                       <div class="avatar_column">
                         {#if message.hasOwnProperty('user')}
-                          <img
-                            src={usersInfo[message.user].profile.image_48}
-                            alt="${message.user}'s avatar"
-                          >
+                          <img src={usersInfo[message.user].profile.image_48}>
                         {:else}
-                          {console.log(usersInfo[message.bot_id])}
+                          <img src={usersInfo[message.bot_id].icons.image_48}>
                         {/if}
                       </div>
                       <div class="body">
@@ -391,7 +395,9 @@
                             {usersInfo[message.user].real_name}
                           </span>
                         {:else}
-                          <span class="name">Bot</span>
+                          <span class="name">
+                            {usersInfo[message.bot_id].name}
+                          </span>
                         {/if}
                         <div class="text" use:formatText>{message.text}</div>
                       </div>
