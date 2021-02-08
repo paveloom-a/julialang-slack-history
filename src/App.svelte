@@ -11,21 +11,21 @@
   // Data
 	async function getChannels() {
     const res = await fetch(
-      `https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/history/channels.json`
+      `https://raw.githubusercontent.com/paveloom-a/julialang-slack-history/history/channels.json`
     );
     channels = await res.json();
 	}
 
 	async function getNames() {
     const res = await fetch(
-      `https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/history/names.json`
+      `https://raw.githubusercontent.com/paveloom-a/julialang-slack-history/history/names.json`
     );
     names = await res.json();
 	}
 
 	async function getHistory(channel) {
     const res = await fetch(
-      `https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/history/messages/${channel}/0.json`
+      `https://raw.githubusercontent.com/paveloom-a/julialang-slack-history/history/messages/${channel}/0.json`
     );
     history = await res.json();
 	}
@@ -57,7 +57,7 @@
     });
     let result = users.map(async(user) => {
       const res = await fetch(
-        `https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/history/users/${user}.json`
+        `https://raw.githubusercontent.com/paveloom-a/julialang-slack-history/history/users/${user}.json`
       );
       let info = await res.json();
       usersInfo[user] = info;

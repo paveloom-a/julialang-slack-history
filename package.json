@@ -5,10 +5,10 @@
     "name": "Pavel Sobolev",
     "email": "paveloom@mail.ru"
   },
-  "homepage": "https://github.com/paveloom-m/julialang-slack-history",
+  "homepage": "https://github.com/paveloom-a/julialang-slack-history",
   "repository": {
     "type": "git",
-    "url": "https://github.com/paveloom-m/julialang-slack-history.git"
+    "url": "https://github.com/paveloom-a/julialang-slack-history.git"
   },
   "license": "MIT",
   "scripts": {
