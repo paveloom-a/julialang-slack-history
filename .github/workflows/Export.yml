@@ -22,10 +22,10 @@ jobs:
           version: '1.5.3'
       - name: Get the project files
         run: |
-          wget https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/main/export.jl
-          wget https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/main/split.jl
-          wget https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/main/check.jl
-          wget https://raw.githubusercontent.com/paveloom-m/julialang-slack-history/main/Project.toml
+          wget https://raw.githubusercontent.com/paveloom-a/julialang-slack-history/main/export.jl
+          wget https://raw.githubusercontent.com/paveloom-a/julialang-slack-history/main/split.jl
+          wget https://raw.githubusercontent.com/paveloom-a/julialang-slack-history/main/check.jl
+          wget https://raw.githubusercontent.com/paveloom-a/julialang-slack-history/main/Project.toml
       - name: Instantiate the project
         run: julia --project=. -e 'using Pkg; pkg"instantiate"'
       - name: Export the history
