@@ -53,7 +53,7 @@
   async function getUsersInfo(history) {
     users = [];
     history.messages.forEach(message => {
-      message.hasOwnProperty('user') && users.push(message.user);
+      message.hasOwnProperty('user') ? users.push(message.user) : users.push(message.bot_id);
     });
     let result = users.map(async(user) => {
       const res = await fetch(
@@ -376,20 +376,22 @@
                   {#each history.messages as message}
                     <div class="message">
                       <div class="avatar_column">
-                        <img
-                          src={usersInfo[message.user].profile.image_48}
-                          alt="${message.user}'s avatar"
-                        >
+                        {#if message.hasOwnProperty('user')}
+                          <img
+                            src={usersInfo[message.user].profile.image_48}
+                            alt="${message.user}'s avatar"
+                          >
+                        {:else}
+                          {console.log(usersInfo[message.bot_id])}
+                        {/if}
                       </div>
                       <div class="body">
                         {#if message.hasOwnProperty('user')}
                           <span class="name">
                             {usersInfo[message.user].real_name}
                           </span>
-                        {:else if message.hasOwnProperty('bot_id')}
-                          <span class="name">Bot</span>
                         {:else}
-                          <span class="name">Else</span>
+                          <span class="name">Bot</span>
                         {/if}
                         <div class="text" use:formatText>{message.text}</div>
                       </div>
