@@ -227,7 +227,7 @@ function write(
             # Print the info
             println(
                 ' '^5,
-                "$(yellow)$(counter) ➥ The $(blue)$(user)$(yellow)'s user",
+                "$(yellow)$(counter) ➥ The $(blue)$(user)$(yellow)'s user ",
                 "info has already been exported. Skipping...$(reset)",
             )
 
