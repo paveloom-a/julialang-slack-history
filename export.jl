@@ -144,8 +144,8 @@ function write(
         end
     end
 
-    # Get the threads timestamps
-    threads = filter(!isempty, get.(messages, :thread_ts, ""))
+    # Get the threads
+    threads = get.(messages[haskey.(messages, :reply_count)], :ts)
 
     # Get the number of threads
     threads_num = length(threads)
