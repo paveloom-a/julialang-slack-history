@@ -45,7 +45,7 @@ macro query(args::Symbol...)
 end
 
 # Create a request to the endpoint and return the body
-function request(endpoint, query, pad_length=0)
+function request(endpoint, headers, query, pad_length=0)
     try
         request = HTTP.get(endpoint, headers; query)
         body = JSON3.read(String(request.body))
@@ -61,7 +61,7 @@ function request(endpoint, query, pad_length=0)
                 "$(yellow) ➥ The rate limit is exceeded. Waiting...$(reset)",
             )
             sleep(60)
-            return request(endpoint, query, pad_length)
+            return request(endpoint, headers, query, pad_length)
         # Or report an error
         else
             error(request_failed(endpoint))
@@ -78,7 +78,7 @@ end
 limit = 1000
 
 # Get a list of channels
-channels = request(conversations_list, @query(limit, token))[:channels]
+channels = request(conversations_list, headers, @query(limit, token))[:channels]
 
 # Filter out archived channels
 channels = filter(ch -> !ch[:is_archived], channels)
@@ -175,6 +175,7 @@ function write(
         # Get the first portion of the thread
         replies = request(
             conversations_replies,
+            headers,
             @query(channel, limit, token, ts),
             pad_length
         )
@@ -189,6 +190,7 @@ function write(
             cursor = replies[:response_metadata][:next_cursor]
             replies = request(
                 conversations_replies,
+                headers,
                 @query(channel, cursor, limit, token, ts),
                 pad_length,
             )
@@ -232,6 +234,7 @@ function write(
             # Get the info about the user
             info = request(
                 users_info,
+                headers,
                 @query(token, user),
                 pad_length
             )
@@ -249,6 +252,7 @@ function write(
             # Get the info about the bot
             info = request(
                 bots_info,
+                headers,
                 @query(token, bot),
                 pad_length
             )
@@ -349,7 +353,12 @@ for index in eachindex(ids)
     end
 
     # Get the first portion of the messages history
-    history = request(conversations_history, @query(channel, limit, token), pad_length)
+    history = request(
+        conversations_history,
+        headers,
+        @query(channel, limit, token),
+        pad_length
+    )
     write(channel, history, pad_length, old_messages, old_ts, new_messages)
 
     # Get the next portions of the messages history
@@ -361,6 +370,7 @@ for index in eachindex(ids)
         cursor = history[:response_metadata][:next_cursor]
         history = request(
             conversations_history,
+            headers,
             @query(channel, cursor, limit, token),
             pad_length
         )
