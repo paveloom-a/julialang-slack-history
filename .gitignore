@@ -1,11 +1,19 @@
 # User's Makefile
 Makefile
 
-# Project file and scripts
+# Project files
 Project.toml
 Manifest.toml
 export.jl
 check.jl
 
-# Slack history
-src/history
+# Yarn files
+.yarn/*
+!.yarn/cache
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+
+# Build
+public/build

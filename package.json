@@ -1,0 +1,32 @@
+{
+  "name": "julialang-slack-history",
+  "version": "0.1.0",
+  "author": {
+    "name": "Pavel Sobolev",
+    "email": "paveloom@mail.ru"
+  },
+  "homepage": "https://github.com/paveloom-a/julialang-slack-history",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/paveloom-a/julialang-slack-history.git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "dev": "rollup -c -w",
+    "build": "rollup -c",
+    "serve": "sirv public"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "~17.0.0",
+    "@rollup/plugin-node-resolve": "~11.0.1",
+    "rollup": "~2.35.1",
+    "rollup-plugin-css-only": "~3.1.0",
+    "rollup-plugin-livereload": "~2.0.0",
+    "rollup-plugin-svelte": "~7.0.0",
+    "rollup-plugin-terser": "~7.0.2",
+    "sass": "~1.32.0",
+    "sirv-cli": "~1.0.10",
+    "svelte": "~3.31.0",
+    "svelte-preprocess": "~4.6.1"
+  }
+}
