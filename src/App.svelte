@@ -32,7 +32,8 @@
   let showHistory = false;
   let history = [];
   let users = [];
-  let usersInfo = [];
+  let usersInfo;
+  let reply = [];
 
   let selected = "";
 
@@ -46,18 +47,47 @@
     el.scrollTop = el.scrollHeight + 200;
   }
 
+// Get info about users in the current channel
   async function getUsersInfo(history) {
+    // Nullify the previously stored info
+    // about users from another channel
+    usersInfo = [];
+    // Prepare an array for users' IDs
     users = [];
+    // Fill the array with users' IDs
     history.messages.forEach(message => {
-      message.hasOwnProperty('user') ? users.push(message.user) : users.push(message.bot_id);
-    });
+      // Push the ID of the message's author
+      if (message.hasOwnProperty('user')) {
+        if (!(message.user in users)) {
+          users.push(message.user);
+        }
+      } else {
+        if (!(message.bot_id in users)) {
+          users.push(message.bot_id);
+        }
+      }
+      // Push the IDs of the users in a thread (if present)
+      if (message.hasOwnProperty('reply_count')) {
+        for (const user of message.reply_users) {
+          if (!(user in users)) {
+            users.push(user);
+          }
+        }
+      }
+    })
+    // For every user create a promise
+    // to get information using their ID
     let result = users.map(async(user) => {
+      // Create the promise
       const res = await fetch(
         `https://raw.githubusercontent.com/paveloom-a/julialang-slack-history/history/users/${user}.json`
       );
+      // Parse the result as a JSON object
       let info = await res.json();
+      // Put the object in the results array
       usersInfo[user] = info;
     });
+    // Combine the promises
     return Promise.all(result);
   }
 
@@ -101,6 +131,17 @@
     for (let item of code_elements) {
       hljs.highlightBlock(item);
     };
+  }
+
+  async function getThread(channel, ts) {
+    const res = await fetch(
+      `https://raw.githubusercontent.com/paveloom-a/julialang-slack-history/history/threads/${channel}/${ts}.json`
+    );
+    reply = await res.json();
+  }
+
+  function getThreadPane(channel, ts) {
+    reply = getThread(channel, ts);
   }
 
   // Components
@@ -176,6 +217,28 @@
                 color: rgba(18,100,163,1);
                 padding: 0 2px 1px 2px;
                 border-radius: 3px;
+              }
+            }
+            > .thread-bar {
+              align-items: center;
+              border: 1px solid transparent;
+              border-radius: 6px;
+              display: flex;
+              gap: 6px;
+              margin: 4px 0 0 0;
+              padding: 4px;
+              &:hover {
+                background-color: rgba(255,255,255,1);
+                border-color: rgba(29,28,29,.13);
+              }
+              > .avatars {
+                display: flex;
+                gap: 4px;
+                > img {
+                  border-radius: 4px;
+                  height: 24px;
+                  width: 24px;
+                }
               }
             }
           }
@@ -402,6 +465,29 @@
                           </span>
                         {/if}
                         <div class="text" use:formatText>{message.text}</div>
+                        {#if message.hasOwnProperty('reply_count')}
+                          <div
+                            class="thread-bar"
+                            on:click={getThreadPane(selected, message.ts)}
+                          >
+                            <div class="avatars">
+                            {#each message.reply_users as user}
+                              {#if user.startsWith('U')}
+                                <img
+                                  src={usersInfo[user].profile.image_48}
+                                  alt="${usersInfo[user].real_name}'s avatar"
+                                >
+                              {:else}
+                                <img
+                                  src={usersInfo[user].icons.image_48}
+                                  alt="${usersInfo[user].name}'s avatar"
+                                >
+                              {/if}
+                            {/each}
+                            </div>
+                            <div class="text">View thread</div>
+                          </div>
+                        {/if}
                       </div>
                     </div>
                   {/each}
